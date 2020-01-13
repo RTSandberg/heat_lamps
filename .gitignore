@@ -1,0 +1,5 @@
+.DS_Store
+*/.spyproject/
+__pycache__/
+*checkpoint.ipnyb
+*/.ipynb_checkpoints/
