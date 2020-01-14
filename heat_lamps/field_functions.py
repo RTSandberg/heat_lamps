@@ -5,7 +5,6 @@ from numba import float32, float64
 from numba import int32
 from numba import njit
 
-
 @jitclass([('delta',float64)])
 class exact_field:
     """
@@ -98,12 +97,13 @@ def calc_E_sort(targets, sources, weights, L):
     return E_stored
 
 
-@jitclass([('delta',float64)])
+@jitclass([('delta',float64),('_TOL',float64)])
 class atan_field:
     """
     """
-    def __init__(self, delta):
+    def __init__(self, delta, TOL=1e-14):
         self.delta = delta
+        self._TOL = TOL
 
     def calc_E(self,targets,sources,weights, L):
 #         zs = targets - sources
@@ -113,8 +113,10 @@ class atan_field:
         for i, target in enumerate(targets):
             for j, source in enumerate(sources):
                 z = (target - source)/L
-                if (abs(z - .5) > 1e-12 and abs(z+.5) > 1e-12):
-                    E[i] += weights[j] *( 1/np.pi *                         np.arctan( np.sqrt( 1 + 1./self.delta**2)*                        np.tan(np.pi * z)) - np.mod(z-.5,1.) + .5)
+                if (abs(z - .5) > self._TOL and abs(z+.5) > self._TOL):
+                    E[i] += weights[j] *( 1/np.pi \
+                        * np.arctan( np.sqrt( 1 + 1./self.delta**2) \
+                        * np.tan(np.pi * z)) - np.mod(z-.5,1.) + .5)
         return wadj * E
 
 
