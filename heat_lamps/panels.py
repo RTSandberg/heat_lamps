@@ -81,8 +81,8 @@ class Panels:
     def set_panels(self):
         
         self.phase_panels = np.ndarray(shape=(self.npanels_v,self.npanels_x),dtype=panel)
-        for ii in range(self.npanels_x):
-            for jj in range(self.npanels_v):
+        for jj in range(self.npanels_x):
+            for ii in range(self.npanels_v):
                 panel_ind = ii*self.npanels_x + jj
                 panel_base = self.npanels + panel_ind + ii 
                 # add npanels because vertices are stored after midpoints in x0s list
@@ -102,16 +102,21 @@ class Panels:
                 self.phase_panels[ii][jj]['midpoint'] = panel_ind
                 
     def set_f0_weights(self,f0):
-        """
-        f0 must be a function taking arguments x,v
+        """Set weights 
+
+        Uses function `f0` to set weights of simulation points
+        
+        Parameters
+        ----------
+        f0, function object taking arguments x,v
         """
         
         self.f0s = f0(self.xs,self.vs_old)
         self.weights = np.zeros_like(self.xs)
         self.weights[:self.npanels] = self.q * self.f0s[:self.npanels] * self.dx * self.dv
         # have some redundancy right now, as panel weight is carried by the midpoints
-        for ii in range(self.npanels_x):
-            for jj in range(self.npanels_v):
+        for jj in range(self.npanels_x):
+            for ii in range(self.npanels_v):
         #         print(mypts[myarr[ii][jj]['midpoint']]['weight'])
                 self.phase_panels[ii][jj]['weight'] =             self.weights[self.phase_panels[ii][jj]['midpoint']]
             

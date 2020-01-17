@@ -3,3 +3,4 @@
 __pycache__/
 *checkpoint.ipnyb
 */.ipynb_checkpoints/
+/docs
