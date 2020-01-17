@@ -23,21 +23,57 @@ class exact_field:
             E_stored[i] = .5 * np.dot(np.sign(target - sources), weights)
             E_stored[i] += np.dot(sources,weights)/L + target * rhobar
         
-        return E_stored
+        return E_stored - np.mean(E_stored)
+
+# @njit
+# def calc_E_direct(targets, sources, weights, L):
+#     """
+#     """
+#     rhobar = -np.sum(weights)/L
+#     sumywj = np.dot(sources,weights)/L 
+    
+#     E_stored = np.zeros_like(targets)
+#     for i, target in enumerate(targets):
+#         E_stored[i] = .5 * np.dot(np.sign(target - sources), weights)
+#         E_stored[i] += sumywj + target * rhobar
+    
+#     return E_stored
+# calc_E_direct(np.linspace(0,1),np.array([.5]),np.array([1.]),1.);
 
 @njit
-def calc_E_direct(targets, sources, weights, L):
-    """
-    """
-    rhobar = -np.sum(weights)/L
+def calc_E_naive(targets,sources,weights,L):
+    """calculate E 
     
-    E_stored = np.zeros_like(targets)
-    for i, target in enumerate(targets):
-        E_stored[i] = .5 * np.dot(np.sign(target - sources), weights)
-        E_stored[i] += np.dot(sources,weights)/L + target * rhobar
+    Calculate E at 
     
-    return E_stored
-calc_E_direct(np.linspace(0,1),np.array([.5]),np.array([1.]),1.);
+    parameters
+    ----------
+    targets : array-like
+    sources : array-like
+    weights : array-like
+    L : float
+    """
+#     rhobar = -np.sum(weights)/L
+    rhobar = 0
+    for w in weights:
+        rhobar -= w
+    rhobar /= L
+    
+    sum_ywj = 1/L * np.dot(sources,weights)
+    sum_ywj = 0
+    for ii, y in enumerate(sources):
+        sum_ywj += y*weights[ii]
+    sum_ywj = sum_ywj/L
+    
+    E = np.zeros_like(targets)
+#     cumE = 0
+    for ii, x in enumerate(targets):
+        for jj, y in enumerate(sources):
+            E[ii] += .5*np.sign(x - y)*weights[jj]
+        E[ii] += x*rhobar + sum_ywj
+        
+    E -= np.mean(E)
+    return E
 
 class sort_field:
     def __init__(self,delta):
@@ -64,7 +100,7 @@ class sort_field:
 
         E_stored +=  targets * rhobar +np.dot(sources,weights)/L
         
-        return E_stored
+        return E_stored - np.mean(E_stored)
 
 def calc_E_sort(targets, sources, weights, L):
     """
@@ -94,14 +130,14 @@ def calc_E_sort(targets, sources, weights, L):
 
     E_stored +=  targets * rhobar +np.dot(sources,weights)/L
     
-    return E_stored
+    return E_stored - np.mean(E_stored)
 
 
 @jitclass([('delta',float64),('_TOL',float64)])
 class atan_field:
     """
     """
-    def __init__(self, delta, TOL=1e-14):
+    def __init__(self, delta, TOL=1e-15):
         self.delta = delta
         self._TOL = TOL
 
@@ -124,7 +160,7 @@ class atan_field:
 def calc_E_atan(targets, sources, weights, L, delta):
 #         zs = targets - sources
     wadj = 1/(1-delta/np.sqrt(1+delta**2))
-    TOL = 1e-12
+    TOL = 1e-15
     E = np.zeros_like(targets)
     for i, target in enumerate(targets):
         for j, source in enumerate(sources):
