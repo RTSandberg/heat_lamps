@@ -31,7 +31,7 @@ def update_leapfrog(self, dt):
     self.xs = np.mod(self.xs, self.L)
     self.Es = self.field_obj.calc_E(self.xs, self.xs, self.weights, self.L)
     # self.Es = calc_E_atan(self.xs, self.xs, self.weights, self.L, delta)
-    self.vs_old = self.vs_new
+    self.vs_old[:] = self.vs_new[:]
     self.vs_new += dt * self.qm * self.Es
 
 def diag_dump_leapfrog(self,iter_num):
