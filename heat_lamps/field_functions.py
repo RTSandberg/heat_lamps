@@ -1,5 +1,6 @@
 
 import numpy as np
+import numba
 from numba import jitclass
 from numba import float32, float64
 from numba import int32
@@ -23,7 +24,8 @@ class exact_field:
             E_stored[i] = .5 * np.dot(np.sign(target - sources), weights)
             E_stored[i] += np.dot(sources,weights)/L + target * rhobar
         
-        return E_stored - np.mean(E_stored)
+        return E_stored 
+        # return E_stored - np.mean(E_stored)
 
 # @njit
 # def calc_E_direct(targets, sources, weights, L):
@@ -40,8 +42,8 @@ class exact_field:
 #     return E_stored
 # calc_E_direct(np.linspace(0,1),np.array([.5]),np.array([1.]),1.);
 
-@njit
-def calc_E_naive(targets,sources,weights,L):
+@njit(parallel=True)
+def calc_E_exact(targets,sources,weights,L,delta):
     """calculate E 
     
     Calculate E at 
@@ -67,10 +69,10 @@ def calc_E_naive(targets,sources,weights,L):
     
     E = np.zeros_like(targets)
 #     cumE = 0
-    for ii, x in enumerate(targets):
+    for ii in numba.prange(targets.size):
         for jj, y in enumerate(sources):
-            E[ii] += .5*np.sign(x - y)*weights[jj]
-        E[ii] += x*rhobar + sum_ywj
+            E[ii] += .5*np.sign(targets[ii] - y)*weights[jj]
+        E[ii] += targets[ii]*rhobar + sum_ywj
         
     E -= np.mean(E)
     return E
@@ -102,7 +104,7 @@ class sort_field:
         
         return E_stored - np.mean(E_stored)
 
-def calc_E_sort(targets, sources, weights, L):
+def calc_E_sort(targets, sources, weights, L,delta):
     """
     """
     
@@ -156,17 +158,19 @@ class atan_field:
         return wadj * E
 
 
-@njit(fastmath=True)
+@njit(fastmath=True,parallel=True)
 def calc_E_atan(targets, sources, weights, L, delta):
 #         zs = targets - sources
     wadj = 1/(1-delta/np.sqrt(1+delta**2))
     TOL = 1e-15
     E = np.zeros_like(targets)
-    for i, target in enumerate(targets):
+    for i in numba.prange(targets.size):
         for j, source in enumerate(sources):
-            z = (target - source)/L
+            z = (targets[i] - source)/L
             if (abs(z-.5)>TOL and abs(z + .5) > TOL) :
-                E[i] += weights[j] * ( 1/np.pi *                     np.arctan( np.sqrt( 1 + 1./delta**2)*                    np.tan(np.pi * z)) - np.mod(z-.5,1.) + .5)
+                E[i] += weights[j] * ( 1/np.pi * \
+                    np.arctan( np.sqrt( 1 + 1./delta**2)* np.tan(np.pi * z)) - \
+                    np.mod(z-.5,1.) + .5)
     return wadj * E
 
 @njit

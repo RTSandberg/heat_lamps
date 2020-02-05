@@ -22,6 +22,9 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 	
 	self.initialize(dt)
 	self.diag_dump(0)
+	
+	# trying a deterministic variable step remeshing
+	# 10,10,10,12
 
 	plotvs = np.zeros_like(self.xs)
 	fs = np.zeros_like(plotvs)
@@ -34,6 +37,7 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 		
 		# re-mesh
 		if self.do_remesh:
+
 			if np.mod(iter_num, self.remesh_freq) == 0:
 	#             print('at step %i, remeshing'%iter_num)
 				# xs = x0s
@@ -61,7 +65,12 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 				self.Es = self.field_obj.calc_E(self.xs, self.xs,\
 																self.weights, self.L)
 				# variable re-meshing
-	#             remesh_freq = np.random.randint(7,14)
+                
+				# self.remesh_freq = np.random.randint(8,13)
+				# if self.remesh_freq < 13:
+				# 	self.remesh_freq += 1
+				# else:
+				# 	self.remesh_freq = 8
 			
 		if np.mod(iter_num,dump_freq) == 0:
 	#         print('dumping at step %i'%iter_num)
