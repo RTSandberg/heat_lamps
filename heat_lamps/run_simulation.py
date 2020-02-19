@@ -62,8 +62,8 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 				# weights[:npanels] = f0s[:npanels] * dx * dv * q
 				self.weights[:self.npanels] = f0mids * self.dx * self.dv * self.q 
 
-				self.Es = self.field_obj.calc_E(self.xs, self.xs,\
-																self.weights, self.L)
+				self.Es = self.calc_E(self.xs, self.xs,\
+																self.weights, self.L,self.delta)
 				# variable re-meshing
                 
 				# self.remesh_freq = np.random.randint(8,13)

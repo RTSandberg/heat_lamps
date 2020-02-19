@@ -6,6 +6,56 @@ from numba import float32, float64
 from numba import int32
 from numba import njit
 
+import os
+import sys
+import resource
+import mpi4py.MPI as MPI
+sys.path.append('/Users/ryansand/Documents/plasma_codes/BaryTree/src/python-interface')
+
+import treecodeWrappers
+
+# treecode parameters
+maxParNode=20
+batchSize=20
+GPUpresent=False
+theta=0.7
+treecodeOrder=5
+# gaussianAlpha=1.0
+approximationName = "lagrange"
+singularityHandling = "subtraction"
+verbosity=0
+kernelName = "atan"
+
+def calc_E_tree(targets,sources,weights,L,delta):
+    """calculate E using BaryTree treecode
+    
+    Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
+    
+    parameters
+    ----------
+    targets : array-like
+    sources : array-like
+    weights : array-like
+    L : float
+    delta : float
+    """
+    numberOfKernelParameters=2
+    kernelParameters=np.array([L, delta])
+
+    Nt = targets.size
+    Ns = sources.size
+    Xt = np.zeros(Nt)
+    Yt = np.zeros(Nt)
+    
+    # W = np.ones(num_per_proc)
+    # Q = -1. * L / N * W
+
+    return treecodeWrappers.callTreedriver(  Nt, Ns, 
+                                               np.zeros(Nt), np.zeros(Nt), targets, np.zeros(Nt), 
+                                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
+                                               kernelName, numberOfKernelParameters, kernelParameters, singularityHandling, approximationName,
+                                               treecodeOrder, theta, maxParNode, batchSize, GPUpresent, verbosity)
+
 @jitclass([('delta',float64)])
 class exact_field:
     """
@@ -54,6 +104,7 @@ def calc_E_exact(targets,sources,weights,L,delta):
     sources : array-like
     weights : array-like
     L : float
+    delta : float
     """
 #     rhobar = -np.sum(weights)/L
     rhobar = 0

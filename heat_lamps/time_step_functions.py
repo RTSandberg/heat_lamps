@@ -13,6 +13,11 @@ import numpy as np
 
 def initialize_leapfrog(self, dt):
     """
+    Calculate initial E and stagger velocities so vs_new = v^{n+1.5}, vs_old = v^{n+.5}
+
+    Parameters
+    ----------
+    dt : float
     """
     self.xs = np.mod(self.xs, self.L)
     self.Es = self.calc_E(self.xs, self.xs, self.weights, self.L,self.delta)
@@ -37,6 +42,10 @@ def update_leapfrog(self, dt):
 def diag_dump_leapfrog(self,iter_num):
     """
     write diagnostics to file
+
+    Parameters
+    ----------
+    iter_num : float, which iteration simulation is at
     """
     np.ndarray.tofile(self.xs, self.output_dir + 'xs/xs_%i'%iter_num)
     np.ndarray.tofile(.5 * (self.vs_old + self.vs_new), self.output_dir + 'vs/vs_%i'%iter_num)
