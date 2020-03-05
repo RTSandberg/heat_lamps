@@ -10,9 +10,9 @@ import os
 import sys
 import resource
 import mpi4py.MPI as MPI
-sys.path.append('/Users/ryansand/Documents/plasma_codes/BaryTree/src/python-interface')
+sys.path.append('/Users/ryansand/Documents/plasma_codes/BaryTree/interfaces/python')
 
-import treecodeWrappers
+import BaryTreeInterface
 
 # treecode parameters
 maxParNode=20

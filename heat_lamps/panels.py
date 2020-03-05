@@ -35,6 +35,8 @@ class Panels:
     npanels = 0
     dx = 0
     dv = 0
+
+    limiter = 0.
     
     phase_panels = np.ndarray(shape=(),dtype=panel)
     
@@ -119,6 +121,7 @@ class Panels:
             for ii in range(self.npanels_v):
         #         print(mypts[myarr[ii][jj]['midpoint']]['weight'])
                 self.phase_panels[ii][jj]['weight'] =             self.weights[self.phase_panels[ii][jj]['midpoint']]
+        self.limiter = f0(0,np.max(abs(self.vs_new))+self.dv)
             
     def setup_diagnostic_dir(self, sim_dir):
         """

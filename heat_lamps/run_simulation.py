@@ -48,19 +48,27 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 				# vs = v0s
 				np.copyto(self.vs_new, self.v0s)
 				# f0s = [remesh midpoints, re-mesh vertices]
-				f0mids = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
+				# f0mids = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
+				# 			np.hstack([plotvs, plotvs, plotvs])), \
+				# 			np.hstack([fs,fs,fs]), \
+				# 			(self.x0s[:self.npanels], self.v0s[:self.npanels]),\
+				# 			method=self.interpolation_type)
+				# f0verts = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
+				# 			np.hstack([plotvs, plotvs, plotvs])), \
+				# 			np.hstack([fs,fs,fs]), \
+				# 			(self.x0s[self.npanels:], self.v0s[self.npanels:]),\
+				# 			method=self.interpolation_type)
+				self.f0s = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
 							np.hstack([plotvs, plotvs, plotvs])), \
 							np.hstack([fs,fs,fs]), \
-							(self.x0s[:self.npanels], self.v0s[:self.npanels]),\
+							(self.x0s, self.v0s),\
 							method=self.interpolation_type)
-				f0verts = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
-							np.hstack([plotvs, plotvs, plotvs])), \
-							np.hstack([fs,fs,fs]), \
-							(self.x0s[self.npanels:], self.v0s[self.npanels:]),\
-							method=self.interpolation_type)
-				self.f0s = np.hstack([f0mids, f0verts])
+				f0_nonpos = np.where(self.f0s <= self.limiter)
+				self.f0s[f0_nonpos] = self.limiter
+				
+				# self.f0s = np.hstack([f0mids, f0verts])
 				# weights[:npanels] = f0s[:npanels] * dx * dv * q
-				self.weights[:self.npanels] = f0mids * self.dx * self.dv * self.q 
+				self.weights[:self.npanels] = self.f0s[:self.npanels] * self.dx * self.dv * self.q 
 
 				self.Es = self.calc_E(self.xs, self.xs,\
 																self.weights, self.L,self.delta)
