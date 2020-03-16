@@ -57,7 +57,7 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 				self.weights[:self.npanels] = self.f0s[:self.npanels] * self.dx * self.dv * self.q 
 
 				# need to calculate E and re-stagger v
-				self.initialize(self.dt)
+				self.initialize(dt)
 				
 			
 		if np.mod(iter_num,dump_freq) == 0:

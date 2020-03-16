@@ -10,7 +10,7 @@ import os
 import sys
 import resource
 import mpi4py.MPI as MPI
-sys.path.append('/home/ryansand/plasma_codes/BaryTree/interfaces/python')
+sys.path.append('/Users/ryansand/plasma_codes/BaryTree/interfaces/python')
 
 import BaryTreeInterface
 
@@ -50,7 +50,7 @@ def calc_E_tree(targets,sources,weights,L,delta):
     # W = np.ones(num_per_proc)
     # Q = -1. * L / N * W
 
-    return treecodeWrappers.callTreedriver(  Nt, Ns, 
+    return BaryTreeInterface.callTreedriver(  Nt, Ns, 
                                                np.zeros(Nt), np.zeros(Nt), targets, np.zeros(Nt), 
                                                np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
                                                kernelName, numberOfKernelParameters, kernelParameters, singularityHandling, approximationName,
