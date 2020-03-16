@@ -43,42 +43,27 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 				# xs = x0s
 				modxs = np.mod(self.xs, self.L)
 				np.copyto(plotvs,self.vs_new)
+				np.copyto(plotvs,self.vs_old)
 				np.copyto(fs, self.f0s)
 				np.copyto(self.xs, self.x0s)
 				# vs = v0s
 				np.copyto(self.vs_new, self.v0s)
 				# f0s = [remesh midpoints, re-mesh vertices]
-				# f0mids = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
-				# 			np.hstack([plotvs, plotvs, plotvs])), \
-				# 			np.hstack([fs,fs,fs]), \
-				# 			(self.x0s[:self.npanels], self.v0s[:self.npanels]),\
-				# 			method=self.interpolation_type)
-				# f0verts = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
-				# 			np.hstack([plotvs, plotvs, plotvs])), \
-				# 			np.hstack([fs,fs,fs]), \
-				# 			(self.x0s[self.npanels:], self.v0s[self.npanels:]),\
-				# 			method=self.interpolation_type)
 				self.f0s = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
 							np.hstack([plotvs, plotvs, plotvs])), \
 							np.hstack([fs,fs,fs]), \
 							(self.x0s, self.v0s),\
 							method=self.interpolation_type)
-				f0_nonpos = np.where(self.f0s <= self.limiter)
-				self.f0s[f0_nonpos] = self.limiter
+				# f0_nonpos = np.where(self.f0s <= self.limiter)
+				# self.f0s[f0_nonpos] = self.limiter
 				
-				# self.f0s = np.hstack([f0mids, f0verts])
-				# weights[:npanels] = f0s[:npanels] * dx * dv * q
 				self.weights[:self.npanels] = self.f0s[:self.npanels] * self.dx * self.dv * self.q 
 
-				self.Es = self.calc_E(self.xs, self.xs,\
-																self.weights, self.L,self.delta)
-				# variable re-meshing
-                
-				# self.remesh_freq = np.random.randint(8,13)
-				# if self.remesh_freq < 13:
-				# 	self.remesh_freq += 1
-				# else:
-				# 	self.remesh_freq = 8
+				# need to calculate E and re-stagger v
+				self.initialize(self.dt)
+				# self.Es = self.calc_E(self.xs, self.xs,\
+				# 												self.weights, self.L,self.delta)
+				
 			
 		if np.mod(iter_num,dump_freq) == 0:
 	#         print('dumping at step %i'%iter_num)
