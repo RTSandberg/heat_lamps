@@ -22,9 +22,6 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 	
 	self.initialize(dt)
 	self.diag_dump(0)
-	
-	# trying a deterministic variable step remeshing
-	# 10,10,10,12
 
 	plotvs = np.zeros_like(self.xs)
 	fs = np.zeros_like(plotvs)
@@ -61,8 +58,6 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 
 				# need to calculate E and re-stagger v
 				self.initialize(self.dt)
-				# self.Es = self.calc_E(self.xs, self.xs,\
-				# 												self.weights, self.L,self.delta)
 				
 			
 		if np.mod(iter_num,dump_freq) == 0:
