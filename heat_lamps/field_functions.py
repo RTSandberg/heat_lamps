@@ -10,7 +10,7 @@ import os
 import sys
 import resource
 import mpi4py.MPI as MPI
-sys.path.append('/Users/ryansand/Documents/plasma_codes/BaryTree/interfaces/python')
+sys.path.append('/home/ryansand/plasma_codes/BaryTree/interfaces/python')
 
 import BaryTreeInterface
 
