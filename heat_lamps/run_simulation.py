@@ -39,12 +39,12 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 	#             print('at step %i, remeshing'%iter_num)
 				# xs = x0s
 				modxs = np.mod(self.xs, self.L)
-				np.copyto(plotvs,self.vs_new)
-				np.copyto(plotvs,self.vs_old)
+				np.copyto(plotvs,.5*(self.vs_new + self.vs_old))
 				np.copyto(fs, self.f0s)
 				np.copyto(self.xs, self.x0s)
 				# vs = v0s
 				np.copyto(self.vs_new, self.v0s)
+				np.copyto(self.vs_old, self.v0s)
 				# f0s = [remesh midpoints, re-mesh vertices]
 				self.f0s = griddata((np.hstack([modxs - self.L, modxs, modxs+self.L]), \
 							np.hstack([plotvs, plotvs, plotvs])), \
