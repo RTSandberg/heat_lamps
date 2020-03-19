@@ -1,4 +1,14 @@
+# heat_lamps/heat_lamps/field_functions.py
+"""Contains functionality for evaluating field in 1d periodic Vlasov-Poisson simulations
 
+Routines
+--------
+
+calc_E_tree
+calc_E_sort
+calc_E_atan
+calc_U
+"""
 import numpy as np
 import numba
 from numba import jitclass
@@ -10,8 +20,7 @@ import os
 import sys
 import resource
 import mpi4py.MPI as MPI
-sys.path.append('/Users/ryansand/Documents/plasma_codes/BaryTree/interfaces/python')
-
+sys.path.append('../external_libraries/barytree')
 import BaryTreeInterface
 
 # treecode parameters
