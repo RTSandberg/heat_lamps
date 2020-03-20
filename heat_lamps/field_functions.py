@@ -20,8 +20,7 @@ import os
 import sys
 import resource
 import mpi4py.MPI as MPI
-sys.path.append('../external_libraries/barytree')
-import BaryTreeInterface
+from heat_lamps.barytree import BaryTreeInterface
 
 # treecode parameters
 maxParNode=20
