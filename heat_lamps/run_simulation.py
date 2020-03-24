@@ -22,6 +22,8 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 	
 	self.initialize(dt)
 	self.diag_dump(0)
+	if self.have_tracers == True:
+		self.diag_dump_tracers(0)
 
 	plotvs = np.zeros_like(self.xs)
 	fs = np.zeros_like(plotvs)
@@ -31,6 +33,8 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 
 	for iter_num in range(1,num_steps+1):
 		self.update(dt)
+		if self.have_tracers == True:
+			self.update_tracers(dt)
 		
 		# re-mesh
 		if self.do_remesh:
@@ -63,6 +67,9 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 		if np.mod(iter_num,dump_freq) == 0:
 	#         print('dumping at step %i'%iter_num)
 			self.diag_dump(iter_num)
+			if self.have_tracers:
+				self.diag_dump_tracers(iter_num)
+				
 		if print_update_counter == print_update_frequency:
 			print(f'Iteration number {iter_num}, simulation is about {iter_num/(num_steps+1)*100 :0.0f}% complete')
 			print_update_counter = 0
