@@ -43,6 +43,8 @@ class Panels:
     field_obj = 0. # later define this to be a field object
     # must have member function calc_E(xs,ys,weights,L)
     
+    have_tracers = False # can add tracers using tracers functionaliy
+
     ouput_dir = '' # location of diagnostic output
     
     
