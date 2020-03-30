@@ -67,6 +67,41 @@ def calc_E_tree(targets,sources,weights,L,delta):
                                                kernelName, numberOfKernelParameters, kernelParameters, singularityHandling, approximationName,
                                                treecodeOrder, theta, maxParNode, batchSize, GPUpresent, verbosity)
 
+def calc_E_tree_gpu(targets,sources,weights,L,delta):
+    """calculate E using BaryTree treecode
+    
+    Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
+    
+    parameters
+    ----------
+    targets : array-like
+    sources : array-like
+    weights : array-like
+    L : float
+    delta : float
+    """
+    maxParNode=500
+    batchSize=500
+    GPUpresent=True
+    numberOfKernelParameters=2
+    kernelParameters=np.array([L, delta])
+
+    Nt = targets.size
+    Ns = sources.size
+    Xt = np.zeros(Nt)
+    Yt = np.zeros(Nt)
+
+    # W = np.ones(num_per_proc)
+    # Q = -1. * L / N * W
+
+    return BaryTreeInterface.callTreedriver(  Nt, Ns,
+                                               np.zeros(Nt), np.zeros(Nt), targets, np.zeros(Nt),
+                                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
+                                               kernelName, numberOfKernelParameters, kernelParameters, singularityHandling, approximationName,
+                                               treecodeOrder, theta, maxParNode, batchSize, GPUpresent, verbosity)
+
+
+
 @jitclass([('delta',float64)])
 class exact_field:
     """
