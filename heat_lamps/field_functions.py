@@ -34,6 +34,9 @@ singularityHandling = "subtraction"
 verbosity=0
 kernelName = "atan"
 
+
+
+
 def calc_E_tree(targets,sources,weights,L,delta):
     """calculate E using BaryTree treecode
     
@@ -215,6 +218,34 @@ class atan_field:
                         * np.arctan( np.sqrt( 1 + 1./self.delta**2) \
                         * np.tan(np.pi * z)) - np.mod(z-.5,1.) + .5)
         return wadj * E
+
+# alternate E RK
+@numba.njit(parallel=True)
+def calc_E_RK(targets,sources,q_weights,L,epsilon):
+    """
+    Parameters
+    ----------
+    
+    Notes
+    -----
+    E = 
+    rhobar = -1/L * sum_i [sources[i] * q_wi]
+    """
+    # a = 1./L * np.dot(sources, q_weights)
+    # rhobar = -1./L * np.sum(q_weights)
+    epsLsq = epsilon**2 / L**2
+    norm_epsL = np.sqrt(1 + 4*epsLsq)
+    
+    E = np.zeros_like(targets)
+    for ii in numba.prange(targets.size):
+        xt = targets[ii]
+        for jj in numba.prange(sources.size):
+            xs = sources[jj]
+            z = xt - xs
+            modz = (z + L*(z < -L/2.) - L*(z > L/2.))/L
+            E[ii] += q_weights[jj] * (.5 * modz * norm_epsL \
+            / np.sqrt(modz**2 + epsLsq) - modz )
+    return E
 
 
 @njit(fastmath=True,parallel=True)
