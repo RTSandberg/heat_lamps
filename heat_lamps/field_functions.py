@@ -5,7 +5,10 @@ Routines
 --------
 
 calc_E_tree
+calc_E_tree_gpu
+calc_E_exact
 calc_E_sort
+calc_E_RK
 calc_E_atan
 calc_U
 """
@@ -42,13 +45,21 @@ def calc_E_tree(targets,sources,weights,L,delta):
     
     Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
     
-    parameters
+    Parameters
     ----------
-    targets : array-like
-    sources : array-like
-    weights : array-like
-    L : float
-    delta : float
+    targets : array-like, where to calculate E
+    sources : array-like, locations of source charges
+    weights : array-like, charges of source charges
+    L : float, size of computational domain
+    delta : float, degree of softening
+
+    Returns
+    -------
+    E : ndarray, electric field at targets
+
+    Notes
+    -----
+    Uses atan kernel
     """
     numberOfKernelParameters=2
     kernelParameters=np.array([L, delta])
@@ -68,17 +79,21 @@ def calc_E_tree(targets,sources,weights,L,delta):
                                                treecodeOrder, theta, maxParNode, batchSize, GPUpresent, verbosity)
 
 def calc_E_tree_gpu(targets,sources,weights,L,delta):
-    """calculate E using BaryTree treecode
+    """calculate E using BaryTree treecode on gpu
     
     Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
     
-    parameters
+    Parameters
     ----------
-    targets : array-like
-    sources : array-like
-    weights : array-like
-    L : float
-    delta : float
+    targets : array-like, where to calculate E
+    sources : array-like, locations of source charges
+    weights : array-like, charges of source charges
+    L : float, size of computational domain
+    delta : float, degree of softening
+
+    Returns
+    -------
+    E : ndarray, electric field at targets
     """
     maxParNode=500
     batchSize=500
@@ -107,15 +122,19 @@ def calc_E_tree_gpu(targets,sources,weights,L,delta):
 def calc_E_exact(targets,sources,weights,L,delta):
     """calculate E 
     
-    Calculate E at 
+    Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
     
-    parameters
+    Parameters
     ----------
-    targets : array-like
-    sources : array-like
-    weights : array-like
-    L : float
-    delta : float
+    targets : array-like, where to calculate E
+    sources : array-like, locations of source charges
+    weights : array-like, charges of source charges
+    L : float, size of computational domain
+    delta : float, degree of softening
+
+    Returns
+    -------
+    E : ndarray, electric field at targets
     """
 #     rhobar = -np.sum(weights)/L
     rhobar = 0
@@ -140,7 +159,22 @@ def calc_E_exact(targets,sources,weights,L,delta):
     return E
 
 def calc_E_sort(targets, sources, weights, L,delta):
-    """
+    """Calculate E using exact kernel
+    
+    Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
+    
+    Parameters
+    ----------
+    targets : array-like, where to calculate E
+    sources : array-like, locations of source charges
+    weights : array-like, charges of source charges
+    L : float, size of computational domain
+    delta : float, degree of softening
+
+
+    Returns
+    -------
+    E : ndarray, electric field at targets
     """
     
     # for now
@@ -173,14 +207,25 @@ def calc_E_sort(targets, sources, weights, L,delta):
 # alternate E RK
 @numba.njit(parallel=True)
 def calc_E_RK(targets,sources,q_weights,L,epsilon):
-    """
+    """Calculate E
+    
+    Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta`
+    Uses a multiquadric kernel  
+    
     Parameters
     ----------
+    targets : array-like, where to calculate E
+    sources : array-like, locations of source charges
+    weights : array-like, charges of source charges
+    L : float, size of computational domain
+    delta : float, degree of softening
+
+    Returns
+    -------
+    E : ndarray, electric field at targets
     
     Notes
     -----
-    E = 
-    rhobar = -1/L * sum_i [sources[i] * q_wi]
     """
     # a = 1./L * np.dot(sources, q_weights)
     # rhobar = -1./L * np.sum(q_weights)
@@ -201,7 +246,22 @@ def calc_E_RK(targets,sources,q_weights,L,epsilon):
 
 @njit(fastmath=True,parallel=True)
 def calc_E_atan(targets, sources, weights, L, delta):
-#         zs = targets - sources
+    """Calculate E
+    
+    Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
+    
+    Parameters
+    ----------
+    targets : array-like, where to calculate E
+    sources : array-like, locations of source charges
+    weights : array-like, charges of source charges
+    L : float, size of computational domain
+    delta : float, degree of softening
+    
+    Returns
+    -------
+    E : ndarray, electric field at targets
+    """
     wadj = 1/(1-delta/np.sqrt(1+delta**2))
     TOL = 1e-15
     E = np.zeros_like(targets)
