@@ -20,7 +20,7 @@ def initialize_leapfrog(self, dt):
     dt : float
     """
     self.xs = np.mod(self.xs, self.L)
-    self.Es = self.calc_E(self.xs, self.xs, self.weights, self.L,self.delta)
+    self.Es = self.calc_E(self.xs, self.xs[:self.npanels], self.weights[:self.npanels], self.L,self.delta)
     # self.Es = calc_E_atan(self.xs, self.xs, self.weights, self.L, .2)
 
     self.vs_old -= .5 * dt * self.qm * self.Es
@@ -34,7 +34,7 @@ def update_leapfrog(self, dt):
     # vn+1.5 = vn+.5 + dt * q/m * En+1
     self.xs += dt * self.vs_new
     self.xs = np.mod(self.xs, self.L)
-    self.Es = self.calc_E(self.xs, self.xs, self.weights, self.L,self.delta)
+    self.Es = self.calc_E(self.xs, self.xs[:self.npanels], self.weights[:self.npanels], self.L,self.delta)
     # self.Es = calc_E_atan(self.xs, self.xs, self.weights, self.L, delta)
     self.vs_old[:] = self.vs_new[:]
     self.vs_new += dt * self.qm * self.Es
