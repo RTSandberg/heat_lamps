@@ -102,41 +102,6 @@ def calc_E_tree_gpu(targets,sources,weights,L,delta):
 
 
 
-@jitclass([('delta',float64)])
-class exact_field:
-    """
-    """
-
-    def __init__(self,delta):
-        """
-        """
-        self.delta = 0.
-
-    def calc_E(self,targets,sources,weights, L):
-        rhobar = -np.sum(weights)/L
-        
-        E_stored = np.zeros_like(targets)
-        for i, target in enumerate(targets):
-            E_stored[i] = .5 * np.dot(np.sign(target - sources), weights)
-            E_stored[i] += np.dot(sources,weights)/L + target * rhobar
-        
-        return E_stored 
-        # return E_stored - np.mean(E_stored)
-
-# @njit
-# def calc_E_direct(targets, sources, weights, L):
-#     """
-#     """
-#     rhobar = -np.sum(weights)/L
-#     sumywj = np.dot(sources,weights)/L 
-    
-#     E_stored = np.zeros_like(targets)
-#     for i, target in enumerate(targets):
-#         E_stored[i] = .5 * np.dot(np.sign(target - sources), weights)
-#         E_stored[i] += sumywj + target * rhobar
-    
-#     return E_stored
-# calc_E_direct(np.linspace(0,1),np.array([.5]),np.array([1.]),1.);
 
 @njit(parallel=True)
 def calc_E_exact(targets,sources,weights,L,delta):
@@ -174,33 +139,6 @@ def calc_E_exact(targets,sources,weights,L,delta):
     E -= np.mean(E)
     return E
 
-class sort_field:
-    def __init__(self,delta):
-        self.delta = 0
-
-    def calc_E(self,targets, sources, weights, L):
-    
-        rhobar = -np.sum(weights)/L
-        
-        pos = np.hstack([targets,sources])
-        tot_weights = np.hstack([np.zeros_like(targets),weights])
-
-        [sortpos,inds] = np.unique(pos,return_inverse=True)
-        sortweights = np.zeros_like(sortpos)
-        for ii, ind in enumerate(inds):
-        #     print(ind, ii)
-            sortweights[ind] += tot_weights[ii]
-        sorted_field = np.zeros_like(sortpos)
-        sorted_field[0] = -np.sum(sortweights[1:])
-        for ii in range(1,len(sortpos)):
-            sorted_field[ii] = sorted_field[ii-1] + sortweights[ii-1] + sortweights[ii]
-        E_stored = sorted_field[inds]
-        E_stored = .5 * E_stored[:len(targets)]
-
-        E_stored +=  targets * rhobar +np.dot(sources,weights)/L
-        
-        return E_stored - np.mean(E_stored)
-
 def calc_E_sort(targets, sources, weights, L,delta):
     """
     """
@@ -232,28 +170,6 @@ def calc_E_sort(targets, sources, weights, L,delta):
     return E_stored - np.mean(E_stored)
 
 
-@jitclass([('delta',float64),('_TOL',float64)])
-class atan_field:
-    """
-    """
-    def __init__(self, delta, TOL=1e-15):
-        self.delta = delta
-        self._TOL = TOL
-
-    def calc_E(self,targets,sources,weights, L):
-#         zs = targets - sources
-        wadj = 1/(1-self.delta/np.sqrt(1+self.delta**2))
-
-        E = np.zeros_like(targets)
-        for i, target in enumerate(targets):
-            for j, source in enumerate(sources):
-                z = (target - source)/L
-                if (abs(z - .5) > self._TOL and abs(z+.5) > self._TOL):
-                    E[i] += weights[j] *( 1/np.pi \
-                        * np.arctan( np.sqrt( 1 + 1./self.delta**2) \
-                        * np.tan(np.pi * z)) - np.mod(z-.5,1.) + .5)
-        return wadj * E
-
 # alternate E RK
 @numba.njit(parallel=True)
 def calc_E_RK(targets,sources,q_weights,L,epsilon):
@@ -280,7 +196,7 @@ def calc_E_RK(targets,sources,q_weights,L,epsilon):
             modz = (z + L*(z < -L/2.) - L*(z > L/2.))/L
             E[ii] += q_weights[jj] * (.5 * modz * norm_epsL \
             / np.sqrt(modz**2 + epsLsq) - modz )
-    return E
+    return E - np.mean(E)
 
 
 @njit(fastmath=True,parallel=True)
@@ -296,7 +212,8 @@ def calc_E_atan(targets, sources, weights, L, delta):
                 E[i] += weights[j] * ( 1/np.pi * \
                     np.arctan( np.sqrt( 1 + 1./delta**2)* np.tan(np.pi * z)) - \
                     np.mod(z-.5,1.) + .5)
-    return wadj * E
+    E = wadj * E
+    return E - np.mean(E)
 
 @njit
 def calc_U(sources, weights, L):
