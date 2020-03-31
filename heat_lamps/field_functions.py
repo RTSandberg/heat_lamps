@@ -23,19 +23,21 @@ import os
 import sys
 import resource
 import mpi4py.MPI as MPI
-from heat_lamps.barytree import BaryTreeInterface
+from heat_lamps.barytree import BaryTreeInterface as BT
 
 # treecode parameters
-maxParNode=20
-batchSize=20
+maxPerSourceLeaf=20
+maxPerTargetLeaf=20
 GPUpresent=False
 theta=0.7
 treecodeOrder=5
 # gaussianAlpha=1.0
-approximationName = "lagrange"
-singularityHandling = "subtraction"
+approximation = BT.Approximation.LAGRANGE
+singularity = BT.Singularity.SUBTRACTION
+computeType = BT.ComputeType.PARTICLE_CLUSTER
+
 verbosity=0
-kernelName = "atan"
+kernel = BT.Kernel.ATAN
 
 
 
@@ -66,17 +68,16 @@ def calc_E_tree(targets,sources,weights,L,delta):
 
     Nt = targets.size
     Ns = sources.size
-    Xt = np.zeros(Nt)
-    Yt = np.zeros(Nt)
     
     # W = np.ones(num_per_proc)
     # Q = -1. * L / N * W
 
-    return BaryTreeInterface.callTreedriver(  Nt, Ns, 
-                                               np.zeros(Nt), np.zeros(Nt), targets, np.zeros(Nt), 
-                                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
-                                               kernelName, numberOfKernelParameters, kernelParameters, singularityHandling, approximationName,
-                                               treecodeOrder, theta, maxParNode, batchSize, GPUpresent, verbosity)
+    return BT.callTreedriver(  Nt, Ns, 
+                               np.zeros(Nt), np.zeros(Nt), np.copy(targets), np.zeros(Nt), 
+                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
+                               kernel, numberOfKernelParameters, kernelParameters, singularity, approximation,
+                               computeType, treecodeOrder, theta, maxPerSourceLeaf, maxPerTargetLeaf, 
+                               GPUpresent, verbosity, sizeCheck = 1.0)
 
 def calc_E_tree_gpu(targets,sources,weights,L,delta):
     """calculate E using BaryTree treecode on gpu
@@ -95,25 +96,21 @@ def calc_E_tree_gpu(targets,sources,weights,L,delta):
     -------
     E : ndarray, electric field at targets
     """
-    maxParNode=500
-    batchSize=500
+    maxPerSourceLeaf=500
+    maxPerTargetLeaf=500
     GPUpresent=True
     numberOfKernelParameters=2
     kernelParameters=np.array([L, delta])
 
     Nt = targets.size
     Ns = sources.size
-    Xt = np.zeros(Nt)
-    Yt = np.zeros(Nt)
 
-    # W = np.ones(num_per_proc)
-    # Q = -1. * L / N * W
-
-    return BaryTreeInterface.callTreedriver(  Nt, Ns,
-                                               np.zeros(Nt), np.zeros(Nt), targets, np.zeros(Nt),
-                                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
-                                               kernelName, numberOfKernelParameters, kernelParameters, singularityHandling, approximationName,
-                                               treecodeOrder, theta, maxParNode, batchSize, GPUpresent, verbosity)
+    return BT.callTreedriver(  Nt, Ns,
+                               np.zeros(Nt), np.zeros(Nt), np.copy(targets), np.zeros(Nt),
+                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
+                               kernel, numberOfKernelParameters, kernelParameters, singularity, approximation,
+                               computeType, treecodeOrder, theta, maxPerSourceLeaf, maxPerTargetLeaf, 
+                               GPUpresent, verbosity, sizeCheck = 1.0)
 
 
 
