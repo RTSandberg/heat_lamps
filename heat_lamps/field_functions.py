@@ -152,7 +152,7 @@ def calc_E_exact(targets,sources,weights,L,delta):
             E[ii] += .5*np.sign(targets[ii] - y)*weights[jj]
         E[ii] += targets[ii]*rhobar + sum_ywj
         
-    E -= np.mean(E)
+    # E -= np.mean(E)
     return E
 
 def calc_E_sort(targets, sources, weights, L,delta):
@@ -198,7 +198,7 @@ def calc_E_sort(targets, sources, weights, L,delta):
 
     E_stored +=  targets * rhobar +np.dot(sources,weights)/L
     
-    return E_stored - np.mean(E_stored)
+    return E_stored
 
 
 # alternate E RK
@@ -238,7 +238,7 @@ def calc_E_RK(targets,sources,q_weights,L,epsilon):
             modz = (z + L*(z < -L/2.) - L*(z > L/2.))/L
             E[ii] += q_weights[jj] * (.5 * modz * norm_epsL \
             / np.sqrt(modz**2 + epsLsq) - modz )
-    return E - np.mean(E)
+    return E
 
 
 @njit(fastmath=True,parallel=True)
@@ -270,7 +270,7 @@ def calc_E_atan(targets, sources, weights, L, delta):
                     np.arctan( np.sqrt( 1 + 1./delta**2)* np.tan(np.pi * z)) - \
                     np.mod(z-.5,1.) + .5)
     E = wadj * E
-    return E - np.mean(E)
+    return E
 
 @njit
 def calc_U(sources, weights, L):
