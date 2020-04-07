@@ -240,6 +240,29 @@ def calc_E_RK(targets,sources,q_weights,L,epsilon):
             / np.sqrt(modz**2 + epsLsq) - modz )
     return E
 
+def calc_E_gauss(targets,sources,q_weights,L,epsilon):
+    """
+    Parameters
+    ----------
+    
+    Notes
+    -----
+    E = 
+    rhobar = -1/L * sum_i [sources[i] * q_wi]
+    """
+    s2e = 1./np.sqrt(2.)/epsilon
+    norm_fac = 1./spe.erf(L/2/np.sqrt(2)/epsilon)
+    
+    
+    E = np.zeros_like(targets)
+    for ii, xt in enumerate(targets):
+        for jj, xs in enumerate(sources):
+            z = xt - xs
+            modz = (z + L*(z < -L/2.) - L*(z > L/2.))/L
+            E[ii] += q_weights[jj] * (.5 * spe.erf(modz*s2e) \
+            * norm_fac - modz )
+    return E
+
 
 @njit(fastmath=True,parallel=True)
 def calc_E_atan(targets, sources, weights, L, delta):
