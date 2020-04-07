@@ -36,7 +36,7 @@ approximation = BT.Approximation.LAGRANGE
 singularity = BT.Singularity.SKIPPING
 computeType = BT.ComputeType.PARTICLE_CLUSTER
 
-verbosity=0
+verbosity=1
 kernel = BT.Kernel.ATAN
 
 
