@@ -33,10 +33,10 @@ theta=0.7
 treecodeOrder=5
 # gaussianAlpha=1.0
 approximation = BT.Approximation.LAGRANGE
-singularity = BT.Singularity.SUBTRACTION
+singularity = BT.Singularity.SKIPPING
 computeType = BT.ComputeType.PARTICLE_CLUSTER
 
-verbosity=0
+verbosity=1
 kernel = BT.Kernel.ATAN
 
 
