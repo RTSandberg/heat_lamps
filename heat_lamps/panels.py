@@ -62,7 +62,8 @@ class Panels:
         self.dx = extents_x[1]-extents_x[0]
         self.dv = extents_v[1]-extents_v[0]
         
-        [v_verts, x_verts] = np.meshgrid(extents_v,extents_x)
+        [v_verts, x_verts] = np.meshgrid(extents_v,extents_x[:-1])
+        self.x_verts = extents_x[:-1]
         x_verts = x_verts.reshape(x_verts.size)
         v_verts = v_verts.reshape(v_verts.size)
 
@@ -71,7 +72,8 @@ class Panels:
         # print(mid_v)
 
         # mid_v = mid_v + .5 * (mi)
-        [v_mids, x_mids] = np.meshgrid(mid_v_list,extents_x[:-1]+.5*self.dx)
+        self.x_mids = extents_x[:-1]+.5*self.dx
+        [v_mids, x_mids] = np.meshgrid(mid_v_list, self.x_mids)
         x_mids = x_mids.reshape(x_mids.size)
         v_mids = v_mids.reshape(v_mids.size)
 
@@ -95,8 +97,13 @@ class Panels:
 #                     self.phase_panels[ii][jj]['vertices'] = (panel_base, panel_base+1,\
 #                           panel_base + npanels_v +1, panel_base + npanels_v + 2)
             #stored in plotting order, clockwise from lower left-hand
-                self.phase_panels[ii][jj]['vertices'] = (panel_base, panel_base+1,\
-                  panel_base + self.npanels_v + 2, panel_base + self.npanels_v +1)
+
+                if jj == self.npanels_x - 1:
+                    self.phase_panels[ii][jj]['vertices'] = (panel_base, panel_base+1,\
+                        self.npanels + ii + 2, self.npanels + ii +1)
+                else:
+                    self.phase_panels[ii][jj]['vertices'] = (panel_base, panel_base+1,\
+                        panel_base + self.npanels_v + 2, panel_base + self.npanels_v +1)
 
 #                 else:
 #                 # stored in lexicographical order
