@@ -42,7 +42,7 @@ verbosity=0
 
 
 
-def calc_E_tree(targets,sources,weights,L,delta,kernelName='mq'):
+def calc_E_tree_atan(targets,sources,weights,L,delta):
     """calculate E using BaryTree treecode
     
     Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
@@ -61,12 +61,8 @@ def calc_E_tree(targets,sources,weights,L,delta,kernelName='mq'):
 
     Notes
     -----
-    Uses atan or mq kernel
     """
-    if kernelName =='atan':
-        kernel = BT.Kernel.ATAN
-    else:
-        kernel = BT.Kernel.MQ
+    kernel = BT.Kernel.ATAN
     numberOfKernelParameters=2
     kernelParameters=np.array([L, delta])
 
@@ -83,7 +79,44 @@ def calc_E_tree(targets,sources,weights,L,delta,kernelName='mq'):
                                computeType, treecodeOrder, theta, maxPerSourceLeaf, maxPerTargetLeaf, 
                                GPUpresent, verbosity, sizeCheck = 1.0)
 
-def calc_E_tree_gpu(targets,sources,weights,L,delta,kernelName='mq'):
+def calc_E_tree_mq(targets,sources,weights,L,delta):
+    """calculate E using BaryTree treecode
+    
+    Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
+    
+    Parameters
+    ----------
+    targets : array-like, where to calculate E
+    sources : array-like, locations of source charges
+    weights : array-like, charges of source charges
+    L : float, size of computational domain
+    delta : float, degree of softening
+
+    Returns
+    -------
+    E : ndarray, electric field at targets
+
+    Notes
+    -----
+    """
+    kernel = BT.Kernel.MQ
+    numberOfKernelParameters=2
+    kernelParameters=np.array([L, delta])
+
+    Nt = targets.size
+    Ns = sources.size
+    
+    # W = np.ones(num_per_proc)
+    # Q = -1. * L / N * W
+
+    return BT.callTreedriver(  Nt, Ns, 
+                               np.zeros(Nt), np.zeros(Nt), np.copy(targets), np.ones(Nt), 
+                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones(Ns),
+                               kernel, numberOfKernelParameters, kernelParameters, singularity, approximation,
+                               computeType, treecodeOrder, theta, maxPerSourceLeaf, maxPerTargetLeaf, 
+                               GPUpresent, verbosity, sizeCheck = 1.0)
+
+def calc_E_tree_atan_gpu(targets,sources,weights,L,delta):
     """calculate E using BaryTree treecode on gpu
     
     Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
@@ -100,10 +133,42 @@ def calc_E_tree_gpu(targets,sources,weights,L,delta,kernelName='mq'):
     -------
     E : ndarray, electric field at targets
     """
-    if kernelName =='atan':
-        kernel = BT.Kernel.ATAN
-    else:
-        kernel = BT.Kernel.MQ
+    kernel = BT.Kernel.ATAN
+
+    maxPerSourceLeaf=500
+    maxPerTargetLeaf=500
+    GPUpresent=True
+    numberOfKernelParameters=2
+    kernelParameters=np.array([L, delta])
+
+    Nt = targets.size
+    Ns = sources.size
+
+    return BT.callTreedriver(  Nt, Ns,
+                               np.zeros(Nt), np.zeros(Nt), np.copy(targets), np.zeros(Nt),
+                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
+                               kernel, numberOfKernelParameters, kernelParameters, singularity, approximation,
+                               computeType, treecodeOrder, theta, maxPerSourceLeaf, maxPerTargetLeaf, 
+                               GPUpresent, verbosity, sizeCheck = 1.0)
+
+def calc_E_tree_mq_gpu(targets,sources,weights,L,delta):
+    """calculate E using BaryTree treecode on gpu
+    
+    Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
+    
+    Parameters
+    ----------
+    targets : array-like, where to calculate E
+    sources : array-like, locations of source charges
+    weights : array-like, charges of source charges
+    L : float, size of computational domain
+    delta : float, degree of softening
+
+    Returns
+    -------
+    E : ndarray, electric field at targets
+    """
+    kernel = BT.Kernel.MQ
 
     maxPerSourceLeaf=500
     maxPerTargetLeaf=500
@@ -212,7 +277,7 @@ def calc_E_sort(targets, sources, weights, L,delta):
 
 # alternate E RK
 @numba.njit(parallel=True)
-def calc_E_RK(targets,sources,q_weights,L,epsilon):
+def calc_E_mq(targets,sources,q_weights,L,epsilon):
     """Calculate E
     
     Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta`

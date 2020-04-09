@@ -7,15 +7,15 @@ void calc_E_atan(int nt, double *Es, double *targets, int ns, double *sources,  
     double wadj = 1/(1-delta/sqrt(1+delta*delta));
     double delta_factor = sqrt( 1 + 1.0/(delta*delta));
 
-    #pragma omp parallel for
-//     #pragma acc parallel loop
+//     #pragma omp parallel for
+    #pragma acc parallel loop
     for (i = 0; i < nt; i++)
     {
         double Ei = 0;
         double xi = targets[i];
 
-        #pragma omp for reduction(+:Ei)
-//         #pragma acc loop reduction(+:Ei)
+//         #pragma omp for reduction(+:Ei)
+        #pragma acc loop reduction(+:Ei)
         for (j = 0; j < ns; j++)
         {
             double xj = sources[j];
