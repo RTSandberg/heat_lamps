@@ -6,6 +6,7 @@
 
 import numpy as np
 from scipy.interpolate import griddata
+import time
 
 def run_sim(self, dt, num_steps,dump_freq = 1):
 	"""Run panels simulation
@@ -32,14 +33,20 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 	print_update_counter = 0
 
 	for iter_num in range(1,num_steps+1):
+
+		# t1 = time.time()
 		self.update(dt)
+		# t2 = time.time()
+		# print(f'update time is {t2-t1:.3f}s')
 		if self.have_tracers == True:
 			self.update_tracers(dt)
 		
 		# re-mesh
 		if self.do_remesh:
-
 			if np.mod(iter_num, self.remesh_freq) == 0:
+
+				# t3 = time.time()
+
 	#             print('at step %i, remeshing'%iter_num)
 				# xs = x0s
 				modxs = np.mod(self.xs, self.L)
@@ -59,6 +66,9 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 				# self.f0s[f0_nonpos] = self.limiter
 				
 				self.weights[:self.npanels] = self.f0s[:self.npanels] * self.dx * self.dv * self.q 
+
+				# t4 = time.time()
+				# print(f'interpolate time {t4-t3:.3f}s')
 
 				# need to calculate E and re-stagger v
 				self.initialize(dt)
