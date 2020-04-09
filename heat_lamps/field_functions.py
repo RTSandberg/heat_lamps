@@ -24,6 +24,7 @@ import sys
 import resource
 import mpi4py.MPI as MPI
 from heat_lamps.barytree import BaryTreeInterface as BT
+from heat_lamps.c_functions import field_functions_gpu_py as field_gpu
 
 # treecode parameters
 maxPerSourceLeaf=50
