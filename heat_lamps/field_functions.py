@@ -26,8 +26,8 @@ import mpi4py.MPI as MPI
 from heat_lamps.barytree import BaryTreeInterface as BT
 
 # treecode parameters
-maxPerSourceLeaf=20
-maxPerTargetLeaf=20
+maxPerSourceLeaf=50
+maxPerTargetLeaf=10
 GPUpresent=False
 theta=0.7
 treecodeOrder=5
@@ -36,13 +36,12 @@ approximation = BT.Approximation.LAGRANGE
 singularity = BT.Singularity.SKIPPING
 computeType = BT.ComputeType.PARTICLE_CLUSTER
 
-verbosity=1
-kernel = BT.Kernel.ATAN
+verbosity=0
 
 
 
 
-def calc_E_tree(targets,sources,weights,L,delta):
+def calc_E_tree(targets,sources,weights,L,delta,kernelName='mq'):
     """calculate E using BaryTree treecode
     
     Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
@@ -61,8 +60,12 @@ def calc_E_tree(targets,sources,weights,L,delta):
 
     Notes
     -----
-    Uses atan kernel
+    Uses atan or mq kernel
     """
+    if kernelName =='atan':
+        kernel = BT.Kernel.ATAN
+    else:
+        kernel = BT.Kernel.MQ
     numberOfKernelParameters=2
     kernelParameters=np.array([L, delta])
 
@@ -73,13 +76,13 @@ def calc_E_tree(targets,sources,weights,L,delta):
     # Q = -1. * L / N * W
 
     return BT.callTreedriver(  Nt, Ns, 
-                               np.zeros(Nt), np.zeros(Nt), np.copy(targets), np.zeros(Nt), 
-                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones_like(weights),
+                               np.zeros(Nt), np.zeros(Nt), np.copy(targets), np.ones(Nt), 
+                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones(Ns),
                                kernel, numberOfKernelParameters, kernelParameters, singularity, approximation,
                                computeType, treecodeOrder, theta, maxPerSourceLeaf, maxPerTargetLeaf, 
                                GPUpresent, verbosity, sizeCheck = 1.0)
 
-def calc_E_tree_gpu(targets,sources,weights,L,delta):
+def calc_E_tree_gpu(targets,sources,weights,L,delta,kernelName='mq'):
     """calculate E using BaryTree treecode on gpu
     
     Calculate E at `targets` from `sources` with weights `weights`.  System size is `L`. Softening parameter is `delta` 
@@ -96,6 +99,11 @@ def calc_E_tree_gpu(targets,sources,weights,L,delta):
     -------
     E : ndarray, electric field at targets
     """
+    if kernelName =='atan':
+        kernel = BT.Kernel.ATAN
+    else:
+        kernel = BT.Kernel.MQ
+
     maxPerSourceLeaf=500
     maxPerTargetLeaf=500
     GPUpresent=True
