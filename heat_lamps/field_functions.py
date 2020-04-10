@@ -30,8 +30,8 @@ from heat_lamps.c_functions import field_functions_gpu_py as field_gpu
 maxPerSourceLeaf=50
 maxPerTargetLeaf=10
 GPUpresent=False
-theta=0.7
-treecodeOrder=5
+theta=0.8
+treecodeOrder=4
 # gaussianAlpha=1.0
 approximation = BT.Approximation.LAGRANGE
 singularity = BT.Singularity.SKIPPING
@@ -39,7 +39,26 @@ computeType = BT.ComputeType.PARTICLE_CLUSTER
 
 verbosity=0
 
+def calc_E_uniform_grid(self, targets):
+    """calculate E from distribution on a uniform grid
 
+    The treecode chokes when there are too many points having the same spatial coordinate.
+    This is known to happen at the initial time step and after re-meshing.
+    
+    Parameters
+    ----------
+    targets : ndarray
+        where to evaluate field
+    
+    Returns
+    -------
+    E_reduced : ndarray, size of targets
+        E field at targets from points on u
+    """
+
+    f0T = np.reshape(self.f0s[:self.npanels],(self.npanels_x,self.npanels_v))
+    reduced_qws = self.q * np.sum(f0T,1)*self.dv*self.dx
+    return self.calc_E(targets, self.x_mids, reduced_qws, self.L, self.delta)    
 
 
 def calc_E_tree_atan(targets,sources,weights,L,delta):
@@ -111,7 +130,7 @@ def calc_E_tree_mq(targets,sources,weights,L,delta):
 
     return BT.callTreedriver(  Nt, Ns, 
                                np.zeros(Nt), np.zeros(Nt), np.copy(targets), np.ones(Nt), 
-                               np.zeros(Ns), np.zeros(Ns), sources, weights, np.ones(Ns),
+                               np.zeros(Ns), np.zeros(Ns), np.copy(sources), np.copy(weights), np.ones(Ns),
                                kernel, numberOfKernelParameters, kernelParameters, singularity, approximation,
                                computeType, treecodeOrder, theta, maxPerSourceLeaf, maxPerTargetLeaf, 
                                GPUpresent, verbosity, sizeCheck = 1.0)

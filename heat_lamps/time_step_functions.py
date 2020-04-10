@@ -23,10 +23,12 @@ def initialize_leapfrog(self, dt):
     # self.Es = self.calc_E(self.xs, self.xs[:self.npanels], self.weights[:self.npanels], self.L,self.delta)
     
     # for initialization field calculation, coming from points on a uniform grid:
-    f0T = np.reshape(self.f0s[:self.npanels],(self.npanels_x,self.npanels_v))
-    reduced_qws = self.q * np.sum(f0T,1)*self.dv*self.dx
+    # f0T = np.reshape(self.f0s[:self.npanels],(self.npanels_x,self.npanels_v))
+    # reduced_qws = self.q * np.sum(f0T,1)*self.dv*self.dx
 
-    Es_reduced = self.calc_E(np.hstack([self.x_mids, self.x_verts]), self.x_mids, reduced_qws, self.L, self.delta)    
+    Es_reduced = self.calc_E_uniform_grid(np.hstack([self.x_mids, self.x_verts]))
+
+    # Es_reduced = self.calc_E(np.hstack([self.x_mids, self.x_verts]), self.x_mids, reduced_qws, self.L, self.delta)    
     Es_mids = np.repeat(Es_reduced[:self.npanels_x], self.npanels_v)
     Es_verts = np.repeat(Es_reduced[self.npanels_x:], self.npanels_v+1)
     self.Es = np.hstack([Es_mids, Es_verts])

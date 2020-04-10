@@ -38,6 +38,7 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 		self.update(dt)
 		# t2 = time.time()
 		# print(f'update time is {t2-t1:.3f}s')
+		# print(f'iteration number {iter_num}')
 		if self.have_tracers == True:
 			self.update_tracers(dt)
 		
@@ -72,13 +73,23 @@ def run_sim(self, dt, num_steps,dump_freq = 1):
 
 				# need to calculate E and re-stagger v
 				self.initialize(dt)
-				
+		
 			
 		if np.mod(iter_num,dump_freq) == 0:
 	#         print('dumping at step %i'%iter_num)
 			self.diag_dump(iter_num)
 			if self.have_tracers:
 				self.diag_dump_tracers(iter_num)
+
+		
+		# we're having problems with the interpolation
+		# I'm killing the simulation whenever a NaN creeps in
+		num_nans = np.nonzero(np.isnan(self.f0s))[0].size 
+		if num_nans:
+			print(f'interpolation introduced {num_nans} nans into the simulation!')
+			print(f'stopping simulation at iteration {iter_num}')
+			break
+		
 				
 		if print_update_counter == print_update_frequency:
 			print(f'Iteration number {iter_num}, simulation is about {iter_num/(num_steps+1)*100 :0.0f}% complete')

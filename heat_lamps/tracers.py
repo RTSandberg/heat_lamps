@@ -32,13 +32,15 @@ def add_tracers(self, xs_tracers, vs_tracers, dt):
     self.vs_new_tracers = 1. * vs_tracers
     self.vs_old_tracers = 1. * vs_tracers
 
-    self.Es_tracers = self.calc_E(self.xs_tracers, self.x0s,self.weights, self.L, self.delta)
+    # if sources_on_uniform_grid:
+    self.Es_tracers = self.calc_E_uniform_grid(self.xs_tracers)
+    # else:
+    #     self.Es_tracers = self.calc_E(self.xs_tracers, self.x0s,self.weights, self.L, self.delta)
     
     self.vs_old_tracers -= .5 * dt * self.qm * self.Es_tracers
     self.vs_new_tracers += .5 * dt * self.qm * self.Es_tracers
 
-
-def update(self, dt):
+def update(self, dt, sources_on_uniform_grid=False):
     """advect tracers 1 step
 
     Parameters
@@ -51,7 +53,10 @@ def update(self, dt):
     self.xs_tracers += dt * self.vs_new_tracers
     self.xs_tracers = np.mod(self.xs_tracers, self.L)
     # self.Es = calc_E_atan(self.xs, self.xs, self.weights, self.L, delta)
-    self.Es_tracers = self.calc_E(self.xs_tracers, self.xs, self.weights, self.L,self.delta)
+    if sources_on_uniform_grid:
+        self.Es_tracers = self.calc_E_uniform_grid(self.xs_tracers)
+    else:
+        self.Es_tracers = self.calc_E(self.xs_tracers, self.xs, self.weights, self.L,self.delta)
     # print(Es_tracers)
     self.vs_old_tracers = 1.*self.vs_new_tracers
     self.vs_new_tracers += dt * self.qm * self.Es_tracers
